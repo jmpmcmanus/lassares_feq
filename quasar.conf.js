@@ -58,17 +58,21 @@ module.exports = function (ctx) {
         'QRadio',
         'QToggle',
         'QExpansionItem',
-        'QCard'
+        'QCard',
+        'QCardSection',
+        'QCardActions',
+        'QBanner',
+        'QPageSticky'
       ],
 
       directives: [
-        'Ripple',
-        'ClosePopup'
+        'Ripple'
       ],
 
       // Quasar plugins
       plugins: [
-        'Notify'
+        'Notify',
+        'BottomSheet'
       ]
     },
 
