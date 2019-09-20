@@ -62,7 +62,9 @@ module.exports = function (ctx) {
         'QCardSection',
         'QCardActions',
         'QBanner',
-        'QPageSticky'
+        'QPageSticky',
+        'QFab',
+        'QFabAction'
       ],
 
       directives: [

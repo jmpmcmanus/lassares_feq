@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hhh lpr fff">
-    <q-header elevated class="bg-grey text-black">
+    <q-header elevated class="bg-teal text-black">
       <q-toolbar>
         <div v-if="signIn==='no'">
           <q-icon name="fas fa-sign-in-alt" />
@@ -21,15 +21,15 @@
           Lassares Measurements App
         </q-toolbar-title>
 
-        <q-btn-dropdown flat style="color:bg-grey" icon="layers" class="text-black" label="Menu Panel">
+        <q-btn-dropdown flat style="bg-color:teal" icon="layers" class="text-black" label="Menu Panel">
           <div class="q-pa-md">
             <div class="q-gutter-y-md" style="max-width: 450px">
               <q-tabs
                 v-model="tab"
                 dense
                 class="text-black"
-                active-color="bg-grey"
-                indicator-color="bg-grey"
+                active-color="teal"
+                indicator-color="teal"
                 align="justify"
                 narrow-indicator
               >
@@ -177,7 +177,7 @@
                     </tr>
                     <tr>
                       <td>
-                        <q-btn color="black" @click="filterMeasurements">Filter Measurements</q-btn>
+                        <q-btn color="teal" class="text-black" @click="filterMeasurements">Filter Measurements</q-btn>
                       </td>
                     </tr>
                   </table>
@@ -214,7 +214,7 @@
                     </tr>
                     <tr>
                       <td>
-                        <q-btn color="black" @click="searchMeasurements">Search Measurements</q-btn>
+                        <q-btn color="teal" class="text-black" @click="searchMeasurements">Search Measurements</q-btn>
                       </td>
                     </tr>
                   </table>
@@ -235,7 +235,7 @@
         v-model="leftDrawerOpen"
         show-if-above
         bordered
-        content-class="bg-grey-2"
+        content-class="teal"
       >
         <q-list>
           <q-item-label header>Measurements Data Entry</q-item-label>
@@ -254,157 +254,138 @@
 
     <!-- q-page-container :style="pageStyle" -->
     <q-page-container>
-      <q-page padding>
-        <!--// app map -->
-        <vl-map v-if="mapVisible" class="map" ref="map" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
-            @click="onMapClick" data-projection="EPSG:4326" @mounted="onMapMounted">
-           <!--// map view aka ol.View -->
-          <vl-view ref="mapView" :center.sync="center" :zoom.sync="zoom" :rotation.sync="rotation"></vl-view>
+      <q-page>
+        <q-page-sticky expand position="top">
+          <!--// app map -->
+          <vl-map v-if="mapVisible" class="map" ref="map" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
+              @click="onMapClick" data-projection="EPSG:4326" @mounted="onMapMounted">
+             <!--// map view aka ol.View -->
+            <vl-view ref="mapView" :center.sync="center" :zoom.sync="zoom" :rotation.sync="rotation"></vl-view>
 
-          <!--// click interactions -->
-          <vl-interaction-select ref="selectInteraction" :features.sync="selectedFeatures">
-            <template slot-scope="select">
-              <!--// select styles -->
-              <vl-style-box>
-                <vl-style-stroke color="#33201e" :width="7"></vl-style-stroke>
-                <vl-style-fill :color="[254, 178, 76, 0.7]"></vl-style-fill>
-                <vl-style-circle :radius="5">
-                  <vl-style-stroke color="#9e493e" :width="7"></vl-style-stroke>
+            <!--// click interactions -->
+            <vl-interaction-select ref="selectInteraction" :features.sync="selectedFeatures">
+              <template slot-scope="select">
+                <!--// select styles -->
+                <vl-style-box>
+                  <vl-style-stroke color="#33201e" :width="7"></vl-style-stroke>
                   <vl-style-fill :color="[254, 178, 76, 0.7]"></vl-style-fill>
-                </vl-style-circle>
-              </vl-style-box>
-              <vl-style-box :z-index="1">
-                <vl-style-stroke color="#d43f45" :width="2"></vl-style-stroke>
-                <vl-style-circle :radius="5">
+                  <vl-style-circle :radius="5">
+                    <vl-style-stroke color="#9e493e" :width="7"></vl-style-stroke>
+                    <vl-style-fill :color="[254, 178, 76, 0.7]"></vl-style-fill>
+                  </vl-style-circle>
+                </vl-style-box>
+                <vl-style-box :z-index="1">
                   <vl-style-stroke color="#d43f45" :width="2"></vl-style-stroke>
-                </vl-style-circle>
-              </vl-style-box>
-              <!--// select styles -->
+                  <vl-style-circle :radius="5">
+                    <vl-style-stroke color="#d43f45" :width="2"></vl-style-stroke>
+                  </vl-style-circle>
+                </vl-style-box>
+                <!--// select styles -->
 
-              <!--// selected feature popup -->
-              <div v-if="isBox === 'no'">
-                <vl-overlay class="feature-popup" v-for="feature in select.features" :key="feature.id" :id="feature.id"
-                            :position="pointOnSurface(feature.geometry)" :auto-pan="true" :auto-pan-animation="{ duration: 300 }">
-                  <q-card class="feature-popup">
-                    <q-card-section>
-                      <q-banner inline-actions class="text-black bg-white">
-                        <div class="text-h6">
-                          Feature ID {{ feature.id }}
-                        </div>
-                        <template v-slot:action>
-                          <q-btn flat round dense icon="close" @click="selectedFeatures = selectedFeatures.filter(f => f.id !== feature.id)" />
-                        </template>
-                    </q-banner>
-                      <div v-if="pid == feature.properties['powerline']">
-                        Powerline: {{ powerline }}<br>
-                        Voltage: {{ feature.properties['voltage'] }}<br>
-                        Service Date: {{ feature.properties['service_date'] }}
-                      </div>
-                      <div v-else-if="pid == feature.properties['chemical_id']">
-                        Bore ID: {{ feature.properties['bore_id'] }}<br>
-                        Job ID: {{ feature.properties['job_id'] }}<br>
-                        Device ID: {{ feature.properties['device_id'] }}<br>
-                        Chemical ID: {{ chemical_id }}<br>
-                        Concentration: {{ concentration }}<br>
-                        Timestamp: {{ timestamp }}
-                        status: {{ feature.properties['status'] }}<br>
-                        comment: {{ feature.properties['comment'] }}<br>
-                      </div>
-                    </q-card-section>
-                  </q-card>
-                </vl-overlay>
-              </div>
-              <!--// selected feature popup -->
-
-              <!--// selected feature bar plot -->
-              <div v-if="isBox === 'yes'">
-                <vl-overlay class="barchart-popup" v-for="feature in select.features" :key="feature.id" :id="feature.id"
-                        :position="pointOnSurface(barplotpoint)" :auto-pan="true" :auto-pan-animation="{ duration: 300 }">
-                  <q-card class="barchart-popup">
+                <!--// selected feature popup -->
+                <div v-if="isBox === 'no'">
+                  <vl-overlay class="feature-popup" v-for="feature in select.features" :key="feature.id" :id="feature.id"
+                              :position="pointOnSurface(feature.geometry)" :auto-pan="true" :auto-pan-animation="{ duration: 300 }">
+                    <q-card class="feature-popup">
                       <q-card-section>
                         <q-banner inline-actions class="text-black bg-white">
-                          <b>
-                            {{ pid }} concentration
-                          </b>
-                          <template v-slot:action>
-                            <q-btn flat round dense icon="close" @click="selectedFeatures = selectedFeatures.filter(f => f.id === 0)" />
-                          </template>
-                        </q-banner>
-                        <table class="table is-fullwidth">
-                          <div v-if="pid == chemical_id">
-                            <div v-if="Object.keys(selectedFeaturesBarBox).length > 0">
-                              <tr>
-                                <td>x = Timestamp, y = Concentration</td>
-                              </tr>
-                              <tr>
-                                <td>
-                                  <d3-barchart class="chart" :pdata='selectedFeaturesBarBox' :options='baroptions' />
-                                </td>
-                              </tr>
-                            </div>
+                          <div class="text-h6">
+                            Feature ID {{ feature.id }}
                           </div>
-                        </table>
+                          <template v-slot:action>
+                            <q-btn flat round dense icon="close" @click="selectedFeatures = selectedFeatures.filter(f => f.id !== feature.id)" />
+                          </template>
+                      </q-banner>
+                        <div v-if="pid == feature.properties['powerline']">
+                          Powerline: {{ powerline }}<br>
+                          Voltage: {{ feature.properties['voltage'] }}<br>
+                          Service Date: {{ feature.properties['service_date'] }}
+                        </div>
+                        <div v-else-if="pid == feature.properties['chemical_id']">
+                          Bore ID: {{ feature.properties['bore_id'] }}<br>
+                          Job ID: {{ feature.properties['job_id'] }}<br>
+                          Device ID: {{ feature.properties['device_id'] }}<br>
+                          Chemical ID: {{ chemical_id }}<br>
+                          Concentration: {{ concentration }}<br>
+                          Timestamp: {{ timestamp }}
+                          status: {{ feature.properties['status'] }}<br>
+                          comment: {{ feature.properties['comment'] }}<br>
+                        </div>
                       </q-card-section>
-                  </q-card>
-                </vl-overlay>
-              </div>
-              <!--// selected features bar plot -->
-            </template>
-          </vl-interaction-select>
-          <!--// click interactions -->
+                    </q-card>
+                  </vl-overlay>
+                </div>
+                <!--// selected feature popup -->
 
-          <!--// base layers -->
-          <vl-layer-tile v-for="layer in baseLayers" :key="layer.name" :id="layer.name" :visible="layer.visible">
-            <component :is="'vl-source-' + layer.name" v-bind="layer"></component>
-          </vl-layer-tile>
-          <!--// base layers -->
-          <!--// other layers from config -->
-          <!-- eslint-disable vue/no-use-v-if-with-v-for,vue/no-confusing-v-for-v-if -->
-          <component v-for="layer in layers" :is="layer.cmp" v-if="layer.visible" :key="layer.id" v-bind="layer">
-            <!--// add vl-source-* -->
-            <component ref="layerSource" :is="layer.source.cmp" v-bind="layer.source">
+                <!--// selected feature bar plot -->
+                <div v-if="isBox === 'yes'">
+                  <vl-overlay class="barchart-popup" v-for="feature in select.features" :key="feature.id" :id="feature.id"
+                          :position="pointOnSurface(barplotpoint)" :auto-pan="true" :auto-pan-animation="{ duration: 300 }">
+                    <q-card class="barchart-popup">
+                        <q-card-section>
+                          <q-banner inline-actions class="text-black bg-white">
+                            <b>
+                              {{ pid }} concentration
+                            </b>
+                            <template v-slot:action>
+                              <q-btn flat round dense icon="close" @click="selectedFeatures = selectedFeatures.filter(f => f.id === 0)" />
+                            </template>
+                          </q-banner>
+                          <table class="table is-fullwidth">
+                            <div v-if="pid == chemical_id">
+                              <div v-if="Object.keys(selectedFeaturesBarBox).length > 0">
+                                <tr>
+                                  <td>x = Timestamp, y = Concentration</td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <d3-barchart class="chart" :pdata='selectedFeaturesBarBox' :options='baroptions' />
+                                  </td>
+                                </tr>
+                              </div>
+                            </div>
+                          </table>
+                        </q-card-section>
+                    </q-card>
+                  </vl-overlay>
+                </div>
+                <!--// selected features bar plot -->
+              </template>
+            </vl-interaction-select>
+            <!--// click interactions -->
+
+            <!--// base layers -->
+            <vl-layer-tile v-for="layer in baseLayers" :key="layer.name" :id="layer.name" :visible="layer.visible">
+              <component :is="'vl-source-' + layer.name" v-bind="layer"></component>
+            </vl-layer-tile>
+            <!--// base layers -->
+
+            <!--// other layers from config -->
+            <!-- eslint-disable vue/no-use-v-if-with-v-for,vue/no-confusing-v-for-v-if -->
+            <component v-for="layer in layers" :is="layer.cmp" v-if="layer.visible" :key="layer.id" v-bind="layer">
+              <!--// add vl-source-* -->
+              <component ref="layerSource" :is="layer.source.cmp" v-bind="layer.source">
+              </component>
+
+              <!--// add style components if provided -->
+              <!--// create vl-style-box or vl-style-func -->
+              <component v-if="layer.style" v-for="(style, i) in layer.style" :key="i" :is="style.cmp" v-bind="style">
+              </component>
             </component>
-
-            <!--// add style components if provided -->
-            <!--// create vl-style-box or vl-style-func -->
-            <component v-if="layer.style" v-for="(style, i) in layer.style" :key="i" :is="style.cmp" v-bind="style">
-            </component>
-
-            <!--// style -->
-          </component>
-          <!-- eslint-enable vue/no-use-v-if-with-v-for,vue/no-confusing-v-for-v-if -->
-          <!--// other layers -->
-        </vl-map>
-        <!--// app map -->
-          <!-- place QPageSticky at end of page -->
-          <q-page-sticky position="top-left" :offset="[1, 1]">
-            <q-btn round color="accent" icon="arrow_back" class="rotate-45" />
-          </q-page-sticky>
-          <q-page-sticky position="top" :offset="[0, 1]">
-            <q-btn round color="accent" icon="arrow_back" class="rotate-90" />
-          </q-page-sticky>
-          <q-page-sticky position="top-right" :offset="[1, 1]">
-            <q-btn round color="accent" icon="arrow_upward" class="rotate-45" />
-          </q-page-sticky>
-          <q-page-sticky position="right" :offset="[1, 0]">
-            <q-btn round color="accent" icon="arrow_upward" class="rotate-90" />
-          </q-page-sticky>
-          <q-page-sticky position="left" :offset="[1, 0]">
-            <q-btn round color="accent" icon="arrow_back" />
-          </q-page-sticky>
-          <q-page-sticky position="bottom-left" :offset="[1, 1]">
-            <q-btn round color="accent" icon="arrow_forward" class="rotate-135" />
-          </q-page-sticky>
-          <q-page-sticky position="bottom" :offset="[0, 1]">
-            <q-btn round color="accent" icon="arrow_forward" class="rotate-90" />
-          </q-page-sticky>
-          <q-page-sticky position="bottom-right" :offset="[1, 1]">
-            <q-btn round color="accent" icon="arrow_forward" class="rotate-45" />
-          </q-page-sticky>
+            <!-- eslint-enable vue/no-use-v-if-with-v-for,vue/no-confusing-v-for-v-if -->
+            <!--// other layers -->
+          </vl-map>
+          <!--// app map -->
+        </q-page-sticky>
+        <q-page-sticky position="bottom-right" :offset="[18, 18]">
+          <q-fab icon="keyboard_arrow_up" direction="up" color="teal text-black">
+            <q-fab-action color="teal" @click="onClick" icon="fas fa-object-group" class="text-black" />
+          </q-fab>
+        </q-page-sticky>
       </q-page>
     </q-page-container>
 
-    <q-footer elevated class="bg-grey text-black">
+    <q-footer elevated class="bg-teal text-black">
       <div class="q-pa-sm">
           <q-toolbar>
             <q-btn flat round dense icon="layers">
@@ -455,8 +436,6 @@
 </template>
 
 <script>
-// import Vue from 'vue'
-// import { openURL, Screen } from 'quasar'
 import { openURL } from 'quasar'
 import { camelCase } from 'lodash'
 import { findPointOnSurface, writeGeoJsonFeature } from 'vuelayers/lib/ol-ext'
@@ -511,11 +490,7 @@ export default {
   },
   data () {
     return {
-      // drawerLeft: this.$q.screen.height > 7000,
-      // heightHeader: 10,
-      // heightFooter: 10,
-      // heightScreen: 10,
-      signIn: 'yes',
+      signIn: 'no',
       dialog: false,
       leftDrawerOpen: false,
       tab: 'layers',
@@ -646,14 +621,6 @@ export default {
       })
   },
   watch: {
-    /* $route: {
-      // every time the router changes set our pageTweaks on nextTick!!!
-      handler (to, from) {
-        Vue.nextTick(this.setPageTweaks)
-      },
-      // on initial load set our pageTweaks on nextTick!!!
-      immediate: true
-    }, */
     selectedFeatures: function (features) {
       let i
       let geometries = []
@@ -670,40 +637,13 @@ export default {
       }
     }
   },
-  /* mounted () {
-    if (!window.cordova) return
-    // also be sure to set our pageTweaks when Cordova device is ready
-    document.addEventListener('deviceready', () => {
-      // hide the splashscreen!
-      navigator.splashscreen.hide()
-      // somehow we still need 10 ms delay for it to work properly!
-      setTimeout(this.setPageTweaks, 10)
-    })
-  }, */
-  /* computed: {
-    // create our pageStyle based on our values saved in the component data
-    pageStyle () {
-      const paddingTop = this.heightHeader + 'px !important'
-      const paddingBottom = this.heightFooter + 'px !important'
-      const minHeight = (this.heightScreen - this.heightHeader - this.heightFooter) + 'px !important'
-      return {
-        paddingTop,
-        paddingBottom,
-        minHeight
-      }
-    }
-  }, */
   methods: {
     openURL,
     camelCase,
     pointOnSurface: findPointOnSurface,
-    /* setPageTweaks () {
-      const elHeader = document.querySelector('.q-header')
-      const elFooter = document.querySelector('.q-footer')
-      this.heightHeader = (elHeader) ? elHeader.clientHeight : 0
-      this.heightFooter = (elFooter) ? elFooter.clientHeight : 0
-      this.heightScreen = Screen.height
-    }, */
+    onClick: function () {
+      alert('I clicked it!')
+    },
     getPowerlinesStyle: function () {
       let canvas = document.createElement('canvas')
       let context = canvas.getContext('2d')
@@ -1023,11 +963,17 @@ export default {
 </script>
 
 <style lang="sass">
+  .ol-control button
+    color: black
+    background-color: rgb(0,128,128)
+
+  .ol-control button:hover
+  .ol-control button:focus
+    text-decoration: none
+    background-color: rgb(0,128,128)
+
   a:hover
     font-weight:bold
-
-  .q-page
-    padding: 0.2em
 
   .Powerlines
     position: relative
